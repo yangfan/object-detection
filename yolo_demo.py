@@ -35,28 +35,20 @@ def yolo_filter_boxes(box_confidence, boxes, box_class_probs, threshold=.6):
     """
 
     # Step 1: Compute box scores
-    # START CODE HERE ### (≈ 1 line)
     box_scores = box_confidence * box_class_probs
-    ### END CODE HERE ###
 
     # Step 2: Find the box_classes using the max box_scores, keep track of the corresponding score
-    # START CODE HERE ### (≈ 2 lines)
     box_class_scores = K.max(box_scores, axis=-1, keepdims=False)
     box_classes = K.argmax(box_scores, axis=-1)
-    ### END CODE HERE ###
 
     # Step 3: Create a filtering mask based on "box_class_scores" by using "threshold". The mask should have the
     # same dimension as box_class_scores, and be True for the boxes you want to keep (with probability >= threshold)
-    # START CODE HERE ### (≈ 1 line)
     mask = (box_class_scores >= threshold)
-    ### END CODE HERE ###
 
     # Step 4: Apply the mask to box_class_scores, boxes and box_classes
-    # START CODE HERE ### (≈ 3 lines)
     scores = tf.boolean_mask(box_class_scores, mask)
     boxes = tf.boolean_mask(boxes, mask)
     classes = tf.boolean_mask(box_classes, mask)
-    ### END CODE HERE ###
 
     return scores, boxes, classes
 
@@ -74,7 +66,6 @@ def iou(box1, box2):
     (box2_x1, box2_y1, box2_x2, box2_y2) = box2
 
     # Calculate the (yi1, xi1, yi2, xi2) coordinates of the intersection of box1 and box2. Calculate its Area.
-    # START CODE HERE ### (≈ 7 lines)
     xi1 = max(box1_x1, box2_x1)
     yi1 = max(box1_y1, box2_y1)
     xi2 = min(box1_x2, box2_x2)
@@ -84,19 +75,14 @@ def iou(box1, box2):
 
     # Case in which they don't intersec --> max(,0)
     inter_area = max(height, 0) * max(width, 0)
-    ### END CODE HERE ###
 
     # Calculate the Union area by using Formula: Union(A,B) = A + B - Inter(A,B)
-    # START CODE HERE ### (≈ 3 lines)
     box1_area = (box1_x2 - box1_x1) * (box1_y2 - box1_y1)
     box2_area = (box2_x2 - box2_x1) * (box2_y2 - box2_y1)
     union_area = box1_area + box2_area - inter_area
-    ### END CODE HERE ###
 
     # compute the IoU
-    # START CODE HERE ### (≈ 1 line)
     iou = inter_area / union_area
-    ### END CODE HERE ###
 
     return iou
 
@@ -127,18 +113,13 @@ def yolo_non_max_suppression(scores, boxes, classes, max_boxes=10, iou_threshold
     K.get_session().run(tf.variables_initializer([max_boxes_tensor]))
 
     # Use tf.image.non_max_suppression() to get the list of indices corresponding to boxes you keep
-    # START CODE HERE ### (≈ 1 line)
     nms_indices = tf.image.non_max_suppression(
         boxes, scores, max_boxes, iou_threshold)
 
-    ### END CODE HERE ###
-
     # Use K.gather() to select only nms_indices from scores, boxes and classes
-    # START CODE HERE ### (≈ 3 lines)
     boxes = K.gather(boxes, nms_indices)
     scores = K.gather(scores, nms_indices)
     classes = K.gather(classes, nms_indices)
-    ### END CODE HERE ###
 
     return scores, boxes, classes
 
@@ -164,8 +145,6 @@ def yolo_eval(yolo_outputs, image_shape=(720., 1280.), max_boxes=10, score_thres
     classes -- tensor of shape (None,), predicted class for each box
     """
 
-    ### START CODE HERE ###
-
     # Retrieve outputs of the YOLO model (≈1 line)
     box_confidence, box_xy, box_wh, box_class_probs = yolo_outputs
 
@@ -182,8 +161,6 @@ def yolo_eval(yolo_outputs, image_shape=(720., 1280.), max_boxes=10, score_thres
     # Use one of the functions you've implemented to perform Non-max suppression with
     # maximum number of boxes set to max_boxes and a threshold of iou_threshold (≈1 line)
     scores, boxes, classes = yolo_non_max_suppression(scores, boxes, classes)
-
-    ### END CODE HERE ###
 
     return scores, boxes, classes
 
@@ -220,10 +197,8 @@ def predict(sess, folder, image_file):
 
     # Run the session with the correct tensors and choose the correct placeholders in the feed_dict.
     # You'll need to use feed_dict={yolo_model.input: ... , K.learning_phase(): 0})
-    # START CODE HERE ### (≈ 1 line)
     out_scores, out_boxes, out_classes = sess.run(fetches=[scores, boxes, classes], feed_dict={
                                                   yolo_model.input: image_data, K.learning_phase(): 0})
-    ### END CODE HERE ###
 
     # Print predictions info
     print('Found {} boxes for {}'.format(len(out_boxes), image_file))
